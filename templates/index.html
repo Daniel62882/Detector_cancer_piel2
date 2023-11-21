@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo de Predicción</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #2c3e50;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #ecf0f1;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        label:hover {
+            background-color: #219653;
+        }
+
+        #image-preview {
+            margin-top: 20px;
+            max-width: 100%;
+            height: auto;
+            border: 4px solid #3498db;
+            border-radius: 10px;
+        }
+
+        button {
+            margin-top: 10px;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #prediction-result {
+            margin-top: 20px;
+            font-size: 36px;
+            color: #000;
+            animation: fadeIn 1s, scaleLetters 1s, textColorChange 2s; /* Animaciones combinadas */
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleLetters {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes textColorChange {
+            0% {
+                color: #000;
+            }
+
+            50% {
+                color: #e74c3c; /* Cambio de color a rojo */
+            }
+
+            100% {
+                color: #000;
+            }
+        }
+
+        #upload-button {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Detector de cáncer de piel</h1>
+
+    <form id="predict-form" action="/predict" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" id="image" accept="image/*" required onchange="previewImage()">
+        <label for="image" id="select-image-button">Seleccionar Imagen</label>
+        <img id="image-preview" src="#" alt="Vista previa de la imagen" style="display: none;">
+        <input type="file" name="image" id="upload-button" accept="image/*" style="display: none;">
+        <button type="submit" onclick="predict()">Predecir</button>
+    </form>
+
+    <div id="prediction-result"></div>
+
+    <script>
+        function previewImage() {
+            var preview = document.getElementById('image-preview');
+            var fileInput = document.getElementById('image');
+            var file = fileInput.files[0];
+            var reader = new FileReader();
+
+            reader.onloadend = function () {
+                preview.src = reader.result;
+                preview.style.display = 'block';
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+        }
+
+        function loadImage() {
+            document.getElementById('upload-button').click();
+        }
+
+        function predict() {
+            var form = document.getElementById('predict-form');
+            var formData = new FormData(form);
+
+            fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    var predictionResult = document.getElementById('prediction-result');
+                    predictionResult.innerText = 'Predicción: ' + data.class;
+                    predictionResult.style.color = '#000';
+                    predictionResult.style.animation = 'fadeIn 1s, scaleLetters 1s, textColorChange 2s'; /* Animaciones combinadas */
+                })
+                .catch(error => {
+                    console.error('Error al realizar la predicción:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>
